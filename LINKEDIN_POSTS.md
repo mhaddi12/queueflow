@@ -1,36 +1,29 @@
-# QueueFlow LinkedIn posts
+# QueueFlow LinkedIn schedule
 
-Personal account connected through Metricool. Intended timezone: Asia/Karachi. Posts accurately describe a public demo, not a production booking service.
+Timezone: Asia/Karachi. Existing posts updated; no duplicates created.
 
-## Post 1 — Project introduction
+## 23 October 2026, 11:00 — Coming soon
 
-Small businesses do not just need another calendar. They need to know who is booked, who has arrived, and who is next.
+Coming soon: QueueFlow.
 
-That is the workflow I explored with QueueFlow, an appointment and queue management web app demo.
+I’m building a mobile web app to help service businesses manage appointments and queues in one place.
 
-The focus is simple:
-• Book a service with a team member.
-• Check in and join a visible queue.
-• Start service, complete the appointment, and keep its history.
-• Handle rescheduling, cancellations, staff availability, and queue limits.
+The problem I’m working on: a booking is only the start. Teams also need to know who has arrived, who is waiting, and who should be served next.
 
-I also gave the project a clearer public product page and a workspace designed for both desktop and mobile use.
+The current demo covers booking, rescheduling, check-in, queue order, staff availability, cancellations, and no-shows.
 
-Under the interface: 27 automated tests, including checks across more than 5,000 service-and-time combinations. GitHub Actions runs the checks before deploying to GitHub Pages.
+Building this is also shaping how I work as a developer: start with a real workflow, make the interface clear, and test what happens when the day goes off plan.
 
-An important boundary: this is a browser-local demo. Firebase integration, real customer accounts, shared booking data, and notifications are still pending.
+QueueFlow is still in development. Firebase database access and payment activation are not complete, so this is a preview rather than a live booking service.
 
-Try it with fictional details:
+Explore with fictional details:
 https://mhaddi12.github.io/queueflow/
 
-Source:
-https://github.com/mhaddi12/queueflow
+If you run a service business, what would make your busiest day easier?
 
-If you run a service business, which creates more friction for you: booking changes or managing walk-ins?
+#BuildInPublic #WebDevelopment #SaaS #SmallBusiness
 
-#BuildInPublic #WebDevelopment #SoftwareEngineering #SmallBusiness
-
-## Post 2 — Engineering lessons
+## 24 October 2026, 11:00 — Personal branding
 
 A booking form is easy to draw. The difficult part is deciding what should happen when the day stops going to plan.
 
@@ -44,11 +37,11 @@ What if the queue is full, or the browser cannot save?
 
 Each answer becomes a rule. Each important rule deserves a check.
 
-The demo now has 27 automated tests, including more than 5,000 service-and-slot combinations. During review, I also fixed cases where a failed save could still display a success message.
+The demo now has 38 automated tests, including more than 5,000 service-and-slot combinations. During review, I also fixed cases where a failed save could still display a success message.
 
 The lesson I am taking forward: interface polish and trustworthy behavior have to grow together.
 
-Tests passing does not automatically make an app production-ready. QueueFlow still needs Firebase authentication, authoritative booking transactions, business-level permissions, and cross-device concurrency tests.
+Tests passing does not automatically make an app production-ready. Firebase authentication configuration has been started, but the live app still needs a verified database connection, authoritative booking transactions, business-level permissions, and cross-device concurrency tests.
 
 That distinction matters when sharing work publicly: show the progress, and be precise about what remains.
 
@@ -58,3 +51,4 @@ Code: https://github.com/mhaddi12/queueflow
 What is one edge case that changed the way you design an application?
 
 #SoftwareDevelopment #Testing #BuildInPublic #PersonalBranding
+
