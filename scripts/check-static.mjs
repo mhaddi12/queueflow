@@ -1,12 +1,12 @@
 import {readFile,access} from 'node:fs/promises';
 import path from 'node:path';
 const root=path.resolve('dist');
-for(const page of ['index.html','app.html']){
+for(const page of ['index.html','app.html','billing.html']){
 const html=await readFile(path.join(root,page),'utf8');
 for(const [,url] of html.matchAll(/(?:src|href)="([^"]+)"/g)){
  if(url.startsWith('#')||/^https?:/.test(url))continue;
  if(url.startsWith('/'))throw Error('Root-relative asset breaks GitHub project Pages: '+url);
- await access(path.resolve(root,url));
+ await access(path.resolve(root,url.split(/[?#]/)[0]));
 }
 }
 const landing=await readFile(path.join(root,'index.html'),'utf8');

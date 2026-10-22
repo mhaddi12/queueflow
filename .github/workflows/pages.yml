@@ -26,6 +26,9 @@ jobs:
         run: |
           node --check dist/engine.js
           node --check dist/app.js
+          node --check dist/billing.js
+          node --check dist/billing-policy.js
+          node --check billing/safepay.mjs
       - name: Test booking and queue logic
         run: npm test
       - name: Check static asset references

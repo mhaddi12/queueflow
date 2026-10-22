@@ -1,0 +1,17 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {pricing,getPlan,trialEndsAt} from '../dist/billing-policy.js';
+import {subscriptionGateway} from '../billing/safepay.mjs';
+const request={plan:'monthly',checkoutReference:'checkout_12345',verifiedOwner:true,origin:'https://mhaddi12.github.io/queueflow/'};
+const config={planIds:{monthly:'plan_monthly',annual:'plan_annual'},currencyApproved:true,sdk:{checkout:{createSubscription:async()=> 'https://sandbox.api.getsafepay.com/checkout/test'},verify:{webhook:async()=>true}}};
+test('requested subscription prices are exact integer minor units',()=>{assert.equal(pricing.currency,'USD');assert.equal(getPlan('monthly').amountMinor,1000);assert.equal(getPlan('annual').amountMinor,10000);});
+test('unknown and inherited plan keys fail closed',()=>{for(const p of ['free','constructor','toString','__proto__'])assert.throws(()=>getPlan(p));});
+test('trial preview is 30 days across month/leap boundaries',()=>{assert.equal(trialEndsAt('2028-02-01T00:00:00Z'),'2028-03-02T00:00:00.000Z');assert.throws(()=>trialEndsAt('invalid'));});
+test('unauthenticated checkout is rejected',async()=>{await assert.rejects(()=>subscriptionGateway(config).checkout({...request,verifiedOwner:false}),/authentication/);});
+test('merchant currency must be checked',async()=>{await assert.rejects(()=>subscriptionGateway({...config,currencyApproved:false}).checkout(request),/currency/);});
+test('live payments require approved merchant',async()=>{await assert.rejects(()=>subscriptionGateway({...config,environment:'production'}).checkout(request),/merchant approval/);});
+test('missing plan and reference are rejected',async()=>{await assert.rejects(()=>subscriptionGateway({...config,planIds:{}}).checkout(request),/plan is not configured/);await assert.rejects(()=>subscriptionGateway(config).checkout({...request,checkoutReference:'x'}),/reference/);});
+test('return URL injection is rejected before provider call',async()=>{for(const origin of ['https://evil.example/','https://mhaddi12.github.io/queueflow/?redirect=evil','https://user@mhaddi12.github.io/queueflow/'])await assert.rejects(()=>subscriptionGateway(config).checkout({...request,origin}),/return URL/);});
+test('checkout uses configured plan and fixed callback URLs',async()=>{let sent;const sdk={checkout:{createSubscription:async input=>{sent=input;return 'https://sandbox.api.getsafepay.com/checkout/ok';}}};const r=await subscriptionGateway({...config,sdk}).checkout({...request,amountMinor:1});assert.equal(sent.planId,'plan_monthly');assert.equal(r.amountMinor,1000);assert.equal(r.state,'pending');assert.equal(sent.redirectUrl,'https://mhaddi12.github.io/queueflow/billing.html?result=pending');});
+test('provider redirect cannot point at unrelated host',async()=>{const sdk={checkout:{createSubscription:async()=> 'https://getsafepay.com.evil.example/checkout'}};await assert.rejects(()=>subscriptionGateway({...config,sdk}).checkout(request),/provider URL/);});
+test('verified webhook alone never grants subscription access',async()=>{assert.deepEqual(await subscriptionGateway(config).verifyWebhook({}),{verified:true,grantAccess:false});await assert.rejects(()=>subscriptionGateway({...config,sdk:{verify:{webhook:async()=>false}}}).verifyWebhook({}),/verified/);});
