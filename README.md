@@ -14,9 +14,11 @@ Booking hours are Monday–Saturday 09:00–18:00, with a 13:00–14:00 break, 1
 
 ## Firebase status
 
-Firebase setup initially encountered network errors. The latest CLI login link was subsequently generated successfully; setup is now waiting for the user to finish Google sign-in and provide its authorization code. No Firebase project or database was created or connected. No authentication, tenant isolation, reminders, payments, or cross-device persistence is provided. No fake Firebase configuration is included.
+The selected project is `angular-gateway-xmbw7`. CLI authentication is complete. Deploying the email/password configuration reports success, but the live frontend is still browser-local. Firestore rules deployment is blocked by HTTP 403: missing `serviceusage.services.use`. Rules remain an unverified prototype. No billing activation was performed. No tenant isolation, reminders, payments, or cross-device persistence is active in the live app.
 
-To finish the integration: restore Firebase CLI connectivity, authenticate, create the project, choose a region and inspect the database edition, then implement the appropriate Firebase SDK and authoritative backend. Firebase skills require the edition to be identified before writing database integration code. Use `npx -y firebase-tools@latest login` and `npx -y firebase-tools@latest projects:create <unique-project-id>` after connectivity is restored.
+The local production auth configuration requests `mhaddi12.github.io` and `angular-gateway-xmbw7.firebaseapp.com`, with email/password enabled and anonymous sign-in disabled. Console verification found Email/Password and Google providers enabled, but `mhaddi12.github.io` is NOT yet authorized; old AI Studio domains remain. The CLI success response therefore does not establish that domain changes took effect. Adding the prepared domain is awaiting action-time approval. Development emulators are isolated in `firebase.emulators.json`, bind to loopback only, and should be started with a demo project: `firebase emulators:start --config firebase.emulators.json --project demo-queueflow --only auth,firestore`. The frontend is not yet wired to them. This configuration has not been emulator-tested.
+
+To finish integration, first resolve project permissions. The existing named Enterprise Firestore database is `ai-studio-resumeaiairesume-160378a3-37d7-4ab9-b93d-ec929e2cbef4` in `us-west1`. Deploy and test rules before adding authenticated SDK persistence. The local snapshot rules do not enforce booking business rules; authoritative operations must be implemented and tested before production use.
 
 ## Production architecture to implement
 

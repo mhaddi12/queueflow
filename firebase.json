@@ -1,7 +1,7 @@
 {
   "firestore": [{"database":"ai-studio-resumeaiairesume-160378a3-37d7-4ab9-b93d-ec929e2cbef4","rules":"firestore.rules"}],
   "auth": {
-    "authorizedDomains": ["localhost", "mhaddi12.github.io", "angular-gateway-xmbw7.firebaseapp.com"],
+    "authorizedDomains": ["mhaddi12.github.io", "angular-gateway-xmbw7.firebaseapp.com"],
     "providers": {
       "emailPassword": true,
       "anonymous": false
