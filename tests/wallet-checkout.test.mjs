@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {resolveWalletCheckout} from '../dist/wallet-checkout.js';
+const offer={currency:'USD',amountMinor:1000,interval:'month',recurring:false,manualVerification:true,url:'https://merchantportal.easypaisa.com.pk/example-placeholder'};
+const config=changes=>({approved:true,links:{monthly:{...offer,...changes}}});
+test('wallet checkout stays disabled without merchant approval',()=>assert.throws(()=>resolveWalletCheckout('monthly'),/not available/));
+test('unknown and inherited wallet plans fail closed',()=>{for(const id of ['toString','__proto__','other'])assert.throws(()=>resolveWalletCheckout(id,config()));});
+test('wallet amount, currency and interval must match approved pricing',()=>{for(const change of [{amountMinor:1},{currency:'PKR'},{interval:'year'}])assert.throws(()=>resolveWalletCheckout('monthly',config(change)),/amount or currency/);});
+test('missing annual link cannot fall back to monthly',()=>assert.throws(()=>resolveWalletCheckout('annual',config()),/not available/));
+test('wallet checkout rejects untrusted or insecure redirects',()=>{for(const url of ['http://easypaisa.com.pk/pay','https://easypaisa.com.pk.evil.test/pay','https://evil.test/pay','javascript:alert(1)','https://user:pass@easypaisa.com.pk/pay','https://easypaisa.com.pk:444/pay','https://easypaisa.com.pk/pay#secret'])assert.throws(()=>resolveWalletCheckout('monthly',config({url})),/secure checkout/);});
+test('wallet payment cannot claim recurring billing or skip verification',()=>{for(const change of [{recurring:true},{manualVerification:false}])assert.throws(()=>resolveWalletCheckout('monthly',config(change)),/verification/);});
+test('reviewed wallet link never grants subscription access',()=>{const result=resolveWalletCheckout('monthly',config());assert.equal(result.manualVerification,true);assert.equal(result.amountMinor,1000);assert.equal(result.subscriptionActive,undefined);});
