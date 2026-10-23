@@ -73,13 +73,13 @@ function syncCloudLabels(){
  if(view==='settings'&&cards[2]){cards[2].querySelector('p').textContent='Your workspace is private to your account. Export a copy of your records or manage your account below.';cards[3].hidden=true;document.getElementById('page-subtitle').textContent='Your hours, queue, and private owner workspace controls.';document.getElementById('export-data').textContent='Export cloud workspace';document.getElementById('reset-data').textContent='Clear cloud workspace';document.getElementById('firebase-info').textContent='Account & connection';}
 }
 const cloudStatusText={loading:'Signing in and loading your workspace…','signed-out':'Sign in to open your private workspace.','verify-email':'Verify your email before accessing data. Use the verification controls below.',connecting:'Reconnecting. Editing is paused.',connected:'Your workspace is connected.',error:'Connection failed. Your workspace is locked.'};
-import {installCloudControls} from './cloud-controls.js?v=20261023-clean1';
+import {installCloudControls} from './cloud-controls.js?v=20261023-account1';
 installCloudControls({
  isCloud(){return cloudMode;},
  busy(){return operations.busy;},
  begin(){if(!cloudMode){operations.reset();cloudMode=true;cloudReady=false;state=empty();view='overview';const url=new URL(location.href);url.searchParams.set('workspace','cloud');history.replaceState(null,'',url);render();}},
  state(next){state=next;render();},
- status(status,user,error){const changed=cloudStatus!==status||cloudUser?.uid!==user?.uid;if(cloudUser?.uid!==user?.uid){operations.reset();document.querySelectorAll('[data-dirty]').forEach(el=>delete el.dataset.dirty);$('#workspace-message').hidden=true;pending=null;editId=null;$('#booking-dialog').close();$('#confirm-dialog').close();}cloudStatus=status;cloudReady=status==='connected';cloudUser=user||null;const text=error?(cloud?.message(error)||cloudStatusText.error):cloudStatusText[status];document.dispatchEvent(new CustomEvent('queueflow-cloud-status',{detail:{status,text}}));if(changed)render();else{syncCloudLabels();connection();}},
+ status(status,user,error){const changed=cloudStatus!==status||cloudUser?.uid!==user?.uid;if(cloudUser?.uid!==user?.uid){operations.reset();document.querySelectorAll('[data-dirty]').forEach(el=>delete el.dataset.dirty);$('#workspace-message').hidden=true;pending=null;editId=null;$('#booking-dialog').close();$('#confirm-dialog').close();}cloudStatus=status;cloudReady=status==='connected';cloudUser=user||null;const text=error?(cloud?.message(error)||cloudStatusText.error):cloudStatusText[status];document.dispatchEvent(new CustomEvent('queueflow-cloud-status',{detail:{status,text,user:user?{email:user.email,emailVerified:user.emailVerified}:null}}));if(changed)render();else{syncCloudLabels();connection();}},
 });
 // Keep the SDK lazy for demo visitors; cloud mutations use the same module instance.
 document.getElementById('cloud-account').addEventListener('click',async()=>{try{cloud=await import('./firebase-client.js?v=20261023-state1');}catch{}});
