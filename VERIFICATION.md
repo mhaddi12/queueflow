@@ -7,3 +7,6 @@ Emulator checks: verified owner create/read; unauthenticated/unverified/foreign 
 Approved owner-only rules were published in the named production database through the console. No billing activation. Frontend deployment and live account verification are reported in the task response. No real customer data was used in emulator testing.
 
 Limits: opaque owner-controlled JSON, device-local timezone and 500-record cap; no public customer booking, staff accounts, authoritative server business validation, notifications, automated backups/retention or live payments. This is a limited owner beta, not a complete production release.
+
+
+Live verification: GitHub Actions build, domain tests, Firestore emulator tests and Pages deployment succeeded. Signed in through Google as the project owner on the public GitHub Pages app. Firebase connected to the named production database. Paused check-in through a Firestore transaction, reloaded and observed the persisted paused state, then restored check-in. No customer appointments, reminders or payment transactions were created during the live check.
