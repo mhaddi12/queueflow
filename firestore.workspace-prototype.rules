@@ -5,7 +5,7 @@ rules_version = '2';
 // updatedAt: server timestamp. Payload conveys no roles or billing privileges.
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isAuthenticated() { return request.auth != null; }
+    function isAuthenticated() { return request.auth != null && request.auth.token.email_verified == true; }
     function isOwner(uid) { return isAuthenticated() && request.auth.uid == uid; }
     function uidUnchanged(uid) { return request.resource.data.ownerId == uid; }
     function uidNotModified() { return request.resource.data.ownerId == resource.data.ownerId; }
@@ -28,7 +28,7 @@ service cloud.firestore {
         && isValidWorkspace(request.resource.data)
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.revision == resource.data.revision + 1;
-      allow delete: if isOwner(uid);
+      allow delete: if false;
     }
     match /{document=**} { allow read, write: if false; }
   }

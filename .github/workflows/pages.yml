@@ -22,6 +22,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
+      - run: npm ci
+      - run: npm run build
       - name: Check JavaScript syntax
         run: |
           node --check dist/engine.js
@@ -29,8 +31,17 @@ jobs:
           node --check dist/billing.js
           node --check dist/billing-policy.js
           node --check billing/safepay.mjs
+          node --check dist/cloud-controls.js
+          node --check dist/workspace-state.js
+          node --check firebase-client.js
       - name: Test booking and queue logic
         run: npm test
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Test Firebase owner isolation and concurrent writes
+        run: npx --yes firebase-tools@15.34.1 emulators:exec --config firebase.emulators.json --project demo-queueflow --only firestore "npm run test:rules"
       - name: Check static asset references
         run: node scripts/check-static.mjs
   deploy:
@@ -46,6 +57,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm run build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

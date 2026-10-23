@@ -1,43 +1,29 @@
 # QueueFlow
 
-Mobile-responsive appointment and queue manager. **Working local demo, not a live Firebase application.**
+Mobile appointment and queue manager with a local demo and optional private Firebase owner workspace. Limited owner beta, not a complete production SaaS.
 
-## Run
+## Run and test
 
-Node.js 20+: `npm start`, then open http://127.0.0.1:4173. Run `npm test` for domain tests. No npm dependencies are required. Browser Web Locks and localStorage are required for edits. The UI loads optional Google fonts; system fonts work if unavailable.
+Node.js 24.12+: `npm ci`, `npm run build`, `npm start`. Open http://127.0.0.1:4173. The Firebase browser bundle is built from firebase-client.js and is not checked into Git. `npm test` runs 43 unit/domain tests. Java 21 and the Firebase emulators are required for six integration tests (`npm run test:rules`). GitHub Actions builds and runs both suites before deploying Pages.
 
-## Included
+## Private cloud workspace
 
-Appointment creation and rescheduling, overlap checks, service durations, per-staff schedules, customer phone conflict detection, appointment search, date/status filters, check-in, FIFO ticket order, per-staff service completion, cancellations, no-shows, queue pause/capacity, staff absence, date closures, demo export and sample data. Layout adapts to mobile. All dates use device-local time in this demo.
+Select Sign in / cloud workspace, use Google or email/password, and verify your email. Unverified accounts cannot access records. Auth uses session persistence. Cloud data is not stored in localStorage. The demo is separate and never imported automatically. Cloud edits stay locked while signed out, offline, unverified or disconnected. A failed cloud save never falls back to demo storage. Sign-out and account changes clear visible records.
 
-Booking hours are Monday–Saturday 09:00–18:00, with a 13:00–14:00 break, 15-minute slots and a 60-day horizon. Check-in opens 30 minutes early. No-show requires a 15-minute grace period. Rescheduling is allowed only before check-in. Terminal records remain for history. Customer cancellation and no-show actions require confirmation.
+Selected project: angular-gateway-xmbw7. Named Enterprise database: ai-studio-resumeaiairesume-160378a3-37d7-4ab9-b93d-ec929e2cbef4, us-west1. No billing activation. The live hostname mhaddi12.github.io is authorized. Google and Email/Password were verified enabled in the console. CLI rule deployment remains permission-blocked; owner-only rules were published through the console on 23 October 2026 with explicit approval.
 
-## Firebase status
+`/workspaces/{uid}` stores a bounded private snapshot. Verified owners can read/create/update only their own document. Exact envelope fields, immutable ownership/creation time, server update time and consecutive revisions are enforced. Legacy users/payments/analyses, other paths and document deletion stay denied. Transactions reread the latest state before applying booking logic, preventing stale client overwrites. Realtime document listeners are required for queue synchronization across owner devices; no collection queries are used.
 
-The selected project is `angular-gateway-xmbw7`. CLI authentication is complete. Deploying the email/password configuration reports success, but the live frontend is still browser-local. Firestore rules deployment is blocked by HTTP 403: missing `serviceusage.services.use`. Rules remain an unverified prototype. No billing activation was performed. No tenant isolation, reminders, payments, or cross-device persistence is active in the live app.
+## Limits before broad production use
 
-The local production auth configuration requests `mhaddi12.github.io` and `angular-gateway-xmbw7.firebaseapp.com`, with email/password enabled and anonymous sign-in disabled. Console verification found Email/Password and Google providers enabled, but `mhaddi12.github.io` is NOT yet authorized; old AI Studio domains remain. The CLI success response therefore does not establish that domain changes took effect. After explicit approval, mhaddi12.github.io was added in the Firebase console and confirmed saved. The earlier console observation above describes the pre-change state. Development emulators are isolated in `firebase.emulators.json`, bind to loopback only, and should be started with a demo project: `firebase emulators:start --config firebase.emulators.json --project demo-queueflow --only auth,firestore`. The frontend is not yet wired to them. This configuration has not been emulator-tested.
+The payload is owner-controlled JSON. Rules enforce owner isolation and the envelope, not booking business semantics. An owner can directly rewrite their own payload, but cannot grant roles, subscriptions or access to other owners through it. Public booking, staff accounts, authoritative server-side business validation, shared business timezone/DST handling, App Check/rate controls, retention/backups, reminders and live Safepay integration remain unfinished. Devices currently use their local timezone. Limit: 500 appointments and 400 KB per workspace; export/archive old records before exceeding it. No automated trial or payment entitlement is implemented.
 
-To finish integration, first resolve project permissions. The existing named Enterprise Firestore database is `ai-studio-resumeaiairesume-160378a3-37d7-4ab9-b93d-ec929e2cbef4` in `us-west1`. Deploy and test rules before adding authenticated SDK persistence. The local snapshot rules do not enforce booking business rules; authoritative operations must be implemented and tested before production use.
+The emulator exercises Standard document/rules semantics, not a full Enterprise production simulation. Live account and database verification are separate checks after deployment. Passing tests does not establish absence of all errors.
 
-## Production architecture to implement
+## Development isolation
 
-- Firebase Authentication for owners, staff, and customers. Business membership is server assigned; clients cannot promote their roles.
-- Firestore records scoped to business ID. Customers read only their own records, staff access their authorized business, and public queue displays expose ticket numbers only.
-- Callable server operations perform booking, reschedule, check-in and transitions. Clients cannot directly write appointment or lock records.
-- Server transaction claims every occupied staff/time segment, checks membership, business timezone, closure/breaks, horizon, service version, customer conflicts, and capacity. Rescheduling releases old locks and claims new locks in one transaction. Cancellation/completion/no-show release appropriate locks.
-- Idempotency keys return the original response on retried submissions; transactional queue sequence allocation prevents duplicate tickets. Use server timestamps and versions to reject stale operations.
-- Use an IANA business timezone and UTC instants. Reject ambiguous/nonexistent daylight-saving times. Do not trust the customer device clock.
-- App Check, request quotas, rate limits, server input validation, audit history, retention policy, and backups. Emulator tests for two customers claiming the same slot and cross-tenant access.
-- Reminders require scheduled delivery with consent, opt-out, cancellation/reschedule checks, deduplication, delivery retries and failure tracking. No notification delivery is implied by booking success.
+Start `firebase emulators:start --config firebase.emulators.json --project demo-queueflow --only auth,firestore`. Services bind only to loopback. Open http://127.0.0.1:4173/app.html?emulators=1&workspace=cloud. Emulator mode is allowed only on 127.0.0.1 and uses demo-queueflow instead of the real project. Disposable test accounts and fictional records must remain in emulators.
 
-## Verification limits
+## Payments
 
-Domain tests run with Node's test runner. Local browser storage operations are serialized across tabs using Web Locks; this does not solve distributed booking conflicts. Customer view is a UI preview, not a security boundary. Demo data should be fictional. No claim is made that all possible edge cases or production readiness have been achieved.
-
-See EDGE_CASES.md for the coverage inventory.
-
-
-## Verified console security changes
-
-On 22 October 2026, the named Firestore database had public read/write rules for users, payments, and analyses. Those were replaced through the console with the deny-all launch gate now in firestore.rules; Firebase confirmed publication. The owner-workspace candidate remains in firestore.workspace-prototype.rules and is NOT deployed or emulator-tested. CLI deployment remains permission-blocked. The live frontend still uses browser-local data; authenticated database persistence is not implemented. Billing was not enabled.
+The Safepay adapter has mocked tests only. Checkout stays disabled. Merchant secrets and payment verification must run on a secure server, never in GitHub Pages or browser code. See BILLING_SETUP.md.
