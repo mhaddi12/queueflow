@@ -27,9 +27,9 @@ export function connectionMessage({mode='demo',status='signed-out',online=true,b
  if(busy)return {kind:'loading',title:'Saving changes…',detail:'Wait for confirmation before trying again.'};
  if(mode==='demo')return {kind:'info',title:online?'Local demo':'Local demo · Offline',detail:'Records stay on this device. Sign in to use a private cloud workspace.'};
  if(!online)return {kind:'warning',title:'You are offline',detail:'Showing the last loaded workspace. Cloud changes are paused until you reconnect.'};
- if(status==='connected')return {kind:'success',title:'Firebase connected',detail:'Your private workspace is synchronized. No reminders or payments are active.'};
+ if(status==='connected')return {kind:'success',title:'Connected',detail:'Your changes are saved across your devices.'};
  if(status==='error')return {kind:'error',title:'Could not connect',detail:error||'Your workspace is locked. Retry the connection; do not resubmit bookings blindly.'};
  if(status==='verify-email')return {kind:'warning',title:'Verify your email',detail:'Open the verification email, then return to Account & connection. Your records stay locked until verification completes.'};
  if(status==='signed-out')return {kind:'info',title:'Sign in to your workspace',detail:'Cloud records are hidden while you are signed out.'};
- return {kind:'loading',title:status==='loading'?'Loading your private workspace…':'Reconnecting to Firebase…',detail:'Editing is paused until the server confirms the connection.'};
+ return {kind:'loading',title:status==='loading'?'Loading your private workspace…':'Reconnecting…',detail:'Editing is paused until the server confirms the connection.'};
 }
