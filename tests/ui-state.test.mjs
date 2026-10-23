@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {createOperationGate,createSnapshotTracker,connectionMessage} from '../dist/ui-state.js';
+test('one pending save prevents duplicate actions',()=>{const gate=createOperationGate(),a=gate.begin();assert.ok(a);assert.equal(gate.begin(),null);assert.equal(gate.busy,true);gate.finish(a);assert.equal(gate.busy,false);});
+test('old account save cannot unlock a new account save',()=>{const gate=createOperationGate(),old=gate.begin();gate.reset();const current=gate.begin();assert.equal(gate.isCurrent(old),false);assert.equal(gate.finish(old),false);assert.equal(gate.busy,true);assert.equal(gate.finish(current),true);});
+test('metadata-only and out-of-order snapshots never replace newer data',()=>{const tracker=createSnapshotTracker();assert.equal(tracker.accept(3,'newest'),true);assert.equal(tracker.accept(3,'newest'),false);assert.equal(tracker.accept(2,'old'),false);assert.equal(tracker.accept(3,'tampered'),false);assert.equal(tracker.accept(4,'next'),true);});
+test('switching accounts resets snapshot identity',()=>{const tracker=createSnapshotTracker();tracker.accept(8,'owner-a');tracker.reset();assert.equal(tracker.accept(1,'owner-b'),true);});
+test('offline cloud state never reports synchronized',()=>{const message=connectionMessage({mode:'cloud',status:'connected',online:false});assert.equal(message.kind,'warning');assert.match(message.detail,/paused/);});
+test('local demo remains local and usable offline',()=>{assert.match(connectionMessage({online:false}).title,/Local demo/);});
+test('loading and signed-out states have distinct messages',()=>{assert.match(connectionMessage({mode:'cloud',status:'loading'}).title,/Loading/);assert.match(connectionMessage({mode:'cloud',status:'signed-out'}).title,/Sign in/);});
+test('save pending and quota errors produce actionable persistent messages',()=>{assert.equal(connectionMessage({busy:true}).kind,'loading');assert.match(connectionMessage({mode:'cloud',status:'error',error:'Free-tier quota reached. Try later.'}).detail,/quota/);});
