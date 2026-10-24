@@ -1,3 +1,4 @@
+import { demoWorkspace } from "../dist/demo-workspace.js";
 import { create } from "zustand";
 import { empty, localDay } from "../dist/engine.js";
 import { validateWorkspace } from "../dist/workspace-state.js";
@@ -41,7 +42,8 @@ type State = {
   data: WorkspaceData;
   mode: "demo" | "cloud";
   status: string;
-  user: { uid: string; email: string | null; emailVerified: boolean } | null;
+  companyName: string;
+  user: { uid: string; email: string | null; emailVerified: boolean; companyName?: string } | null;
   view: View;
   search: string;
   filter: string;
@@ -59,6 +61,7 @@ export const useWorkspace = create<State>((set) => ({
   mode: "demo",
   status: "loading",
   user: null,
+  companyName: "",
   view: "overview",
   search: "",
   filter: "all",
@@ -107,6 +110,7 @@ export async function startCloud() {
           if (changed) mutationScope++;
           useWorkspace.setState({
             status,
+            companyName: user?.companyName || "",
             user: user
               ? {
                   uid: user.uid,
@@ -162,7 +166,10 @@ export function initializeWorkspace() {
   window.addEventListener("online", syncOnline);
   window.addEventListener("offline", syncOnline);
   window.addEventListener("storage", storage);
-  void startCloud();
+  if (new URLSearchParams(location.search).get("workspace") === "demo") {
+    useWorkspace.setState({ mode: "demo", status: "connected", companyName: "Acme Care · Demo", user: {uid:"demo",email:"demo@example.com",emailVerified:true}, data: demoWorkspace() });
+    localStorage.setItem(key, JSON.stringify(useWorkspace.getState().data));
+  } else void startCloud();
   return () => {
     window.removeEventListener("online", syncOnline);
     window.removeEventListener("offline", syncOnline);
@@ -222,15 +229,10 @@ export async function saveWorkspace(
 export async function accountAction(action: string, email = "", password = "") {
   if (useWorkspace.getState().busy)
     throw Error("Wait for the workspace save to finish.");
+  if (useWorkspace.getState().mode === "demo") { location.href = "?workspace=cloud"; return ""; }
   await startCloud();
   if (!sdk) throw Error("Connection unavailable. Retry.");
-  if (action === "google") await sdk.googleLogin();
   if (action === "login") await sdk.emailLogin(email, password);
-  if (action === "register") {
-    if (password.length < 12)
-      throw Error("Choose at least 12 characters for a new account.");
-    await sdk.register(email, password);
-  }
   if (action === "reset") await sdk.resetPassword(email);
   if (action === "verify") await sdk.verificationEmail();
   if (action === "refresh")
@@ -238,9 +240,7 @@ export async function accountAction(action: string, email = "", password = "") {
       ? "Email verified. Sign in again."
       : "Open the verification email, then return here.";
   if (action === "logout") await sdk.logout();
-  return action === "register"
-    ? "Account created. Check your verification email."
-    : action === "verify"
+  return action === "verify"
       ? "Verification email requested."
       : action === "reset"
         ? "If this address has an account, a reset email has been requested."
