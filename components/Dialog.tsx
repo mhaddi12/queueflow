@@ -1,4 +1,5 @@
 "use client";
+import { PendingIndicator } from "./Loading";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 export default function Dialog({
   title,
@@ -34,6 +35,7 @@ export default function Dialog({
     <dialog
       ref={ref}
       aria-labelledby={titleId}
+      aria-busy={busy}
       onCancel={(event) => {
         event.preventDefault();
         if (!busy) close();
@@ -51,6 +53,7 @@ export default function Dialog({
           ×
         </button>
       </div>
+      {busy && <PendingIndicator label="Please wait…" />}
       {children}
     </dialog>
   );

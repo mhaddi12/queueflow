@@ -54,6 +54,7 @@ type State = {
   accountOpen: boolean;
   draft: Draft | null;
   ready: boolean;
+  hasSnapshot: boolean;
   set: (patch: Partial<State>) => void;
 };
 export const useWorkspace = create<State>((set) => ({
@@ -72,6 +73,7 @@ export const useWorkspace = create<State>((set) => ({
   accountOpen: false,
   draft: null,
   ready: false,
+  hasSnapshot: false,
   set: (patch) => set(patch),
 }));
 const key = "queueflow-demo-v1";
@@ -85,6 +87,7 @@ export async function startCloud() {
   const token = ++scope;
   useWorkspace.setState({
     mode: "cloud",
+    hasSnapshot: false,
     data: empty(),
     status: "loading",
     user: null,
@@ -101,7 +104,7 @@ export async function startCloud() {
       if (token !== scope) return;
       disconnect = await sdk.connectWorkspace({
         state(data) {
-          if (token === scope) useWorkspace.setState({ data });
+          if (token === scope) useWorkspace.setState({ data, hasSnapshot: true });
         },
         status(status, user, error) {
           if (token !== scope) return;
@@ -110,6 +113,7 @@ export async function startCloud() {
           if (changed) mutationScope++;
           useWorkspace.setState({
             status,
+            ...(["loading", "signed-out", "verify-email", "unassigned", "error"].includes(status) ? { hasSnapshot: false } : {}),
             companyName: user?.companyName || "",
             user: user
               ? {
@@ -167,7 +171,7 @@ export function initializeWorkspace() {
   window.addEventListener("offline", syncOnline);
   window.addEventListener("storage", storage);
   if (new URLSearchParams(location.search).get("workspace") === "demo") {
-    useWorkspace.setState({ mode: "demo", status: "connected", companyName: "Acme Care · Demo", user: {uid:"demo",email:"demo@example.com",emailVerified:true}, data: demoWorkspace() });
+    useWorkspace.setState({ mode: "demo", hasSnapshot: true, status: "connected", companyName: "Acme Care · Demo", user: {uid:"demo",email:"demo@example.com",emailVerified:true}, data: demoWorkspace() });
     localStorage.setItem(key, JSON.stringify(useWorkspace.getState().data));
   } else void startCloud();
   return () => {
