@@ -20,7 +20,7 @@ const features = [
 const questions = [
   [
     "How do I open my workspace?",
-    "Sign in with Google or a verified email account. Your company records are private to your account and synchronized across your devices.",
+    "Sign in with the company account provided by your administrator. Your company records are private to your account and synchronized across your devices.",
   ],
   [
     "What booking rules are included?",

@@ -1,5 +1,5 @@
 import {initializeApp} from 'firebase/app';
-import {getAuth,browserSessionPersistence,setPersistence,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendEmailVerification,sendPasswordResetEmail,signOut,reload} from 'firebase/auth';
+import {getAuth,browserSessionPersistence,setPersistence,onAuthStateChanged,signInWithEmailAndPassword,sendEmailVerification,sendPasswordResetEmail,signOut,reload} from 'firebase/auth';
 import {getFirestore,doc,onSnapshot,runTransaction,serverTimestamp,connectFirestoreEmulator} from 'firebase/firestore';
 import {connectAuthEmulator} from 'firebase/auth';
 import {decodeWorkspace,encodeWorkspace,initialWorkspace} from './dist/workspace-state.js';
@@ -16,6 +16,10 @@ export async function connectWorkspace(handlers){
  const unsubscribe=onAuthStateChanged(auth,async user=>{
   const token=++generation;stop();ready=false;handlers.state(initialWorkspace());handlers.status(user?'loading':'signed-out',user);
   if(!user)return;
+  let claims;try{claims=(await user.getIdTokenResult()).claims;}catch(error){if(token===generation)handlers.status("error",user,error);return;}
+  if(token!==generation)return;
+  if(claims.queueflowAccess!==true||typeof claims.companyName!=='string'||!claims.companyName.trim()){handlers.status('unassigned',user);return;}
+  user.companyName=claims.companyName;
   if(!user.emailVerified){handlers.status('verify-email',user);return;}
   const tracker=createSnapshotTracker();const ref=doc(db,'workspaces',user.uid);
   stop=onSnapshot(ref,{includeMetadataChanges:true},snapshot=>{
@@ -38,9 +42,7 @@ export async function changeWorkspace(fn){
  });
  if(token!==generation)throw Error('Your account changed during the save.');return result;
 }
-export async function googleLogin(){await persistence;return signInWithPopup(auth,new GoogleAuthProvider());}
 export async function emailLogin(email,password){await persistence;return signInWithEmailAndPassword(auth,email,password);}
-export async function register(email,password){await persistence;const credential=await createUserWithEmailAndPassword(auth,email,password);await sendEmailVerification(credential.user);return credential;}
 export async function verificationEmail(){if(!auth.currentUser)throw Error('Sign in before requesting verification.');await sendEmailVerification(auth.currentUser);}
 export async function refreshVerification(){if(auth.currentUser){await reload(auth.currentUser);await auth.currentUser.getIdToken(true);const user=auth.currentUser;if(user.emailVerified){await signOut(auth);callbacks.status('signed-out');}return user.emailVerified;}}
 export async function resetPassword(email){await sendPasswordResetEmail(auth,email);}

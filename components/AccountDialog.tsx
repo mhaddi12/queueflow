@@ -10,7 +10,7 @@ export default function AccountDialog() {
     [pending, setPending] = useState(false);
   async function run(action: string) {
     if (pending) return;
-    if (["login", "register", "reset"].includes(action) && !email.trim()) {
+    if (["login", "reset"].includes(action) && !email.trim()) {
       setMessage("Enter your email address.");
       return;
     }
@@ -65,14 +65,7 @@ export default function AccountDialog() {
       ) : (
         <>
           <p>Sign in to open your private company workspace.</p>
-          <button
-            className="primary full"
-            disabled={pending}
-            onClick={() => run("google")}
-          >
-            Continue with Google
-          </button>
-          <p className="muted">Or use a verified email account.</p>
+          <p className="muted">Your company account is created by the QueueFlow administrator. Use the credentials provided to you.</p>
           <form onSubmit={submit}>
             <label>
               Email
@@ -102,13 +95,6 @@ export default function AccountDialog() {
             <div className="actions">
               <button className="primary" disabled={pending}>
                 Sign in
-              </button>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => run("register")}
-              >
-                Create account
               </button>
               <button
                 type="button"

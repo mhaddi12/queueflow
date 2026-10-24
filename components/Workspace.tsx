@@ -683,7 +683,7 @@ export default function Workspace() {
     !ready ||
     !user ||
     !user.emailVerified ||
-    ["loading", "signed-out", "verify-email", "error"].includes(status);
+    ["loading", "signed-out", "verify-email", "unassigned", "error"].includes(status);
   const message = connectionMessage({
     mode: "cloud",
     status,
@@ -694,7 +694,7 @@ export default function Workspace() {
   const openAccount = () => {
     setMenu(false);
     set({ accountOpen: true });
-    void startCloud();
+    if (state.mode !== "demo") void startCloud();
   };
   const canEdit = status === "connected" && online && !busy;
   return (
@@ -712,9 +712,9 @@ export default function Workspace() {
             <span className="branddot">●</span>
           </a>
           <div className="business">
-            <span className="avatar">Q</span>
+            <span className="avatar">{state.companyName.slice(0, 1).toUpperCase()}</span>
             <div>
-              <b>Your company</b>
+              <b>{state.companyName}</b>
               <small>Private workspace</small>
             </div>
           </div>
@@ -765,7 +765,7 @@ export default function Workspace() {
             </button>
           )}
           <span className="breadcrumb">
-            Workspace <span>/</span>{" "}
+            {state.companyName || "Workspace"} <span>/</span>{" "}
             <b>
               {locked
                 ? "Sign in"
@@ -779,6 +779,7 @@ export default function Workspace() {
           </div>
         </header>
         <main>
+          {state.mode === "demo" && <div className="connection-banner" role="status"><b>Demo company</b> · Sample records stay in this browser. <a href="?workspace=cloud">Company sign in →</a></div>}
           <div className="page-heading">
             <div>
               <div className="eyebrow">
@@ -846,18 +847,19 @@ export default function Workspace() {
               <h2>
                 {status === "loading"
                   ? "Loading your private workspace…"
-                  : status === "verify-email"
+                  : status === "unassigned"
+                    ? "Company access is not assigned"
+                    : status === "verify-email"
                     ? "Verify your email"
                     : "Welcome to QueueFlow"}
               </h2>
               <p>
-                Company records appear after sign-in, email verification and a
-                confirmed connection. Visitors cannot access another account’s
-                data.
+                Accounts are created by the QueueFlow administrator for each company. Sign in with your assigned account to manage appointments and queues.
               </p>
               <button className="primary" onClick={openAccount}>
-                {user ? "Account & verification" : "Sign in / Create account"}
+                {user ? "Account & verification" : "Company sign in"}
               </button>
+              <a className="demo-entry" href="?workspace=demo">Explore demo company →</a>
             </section>
           ) : (
             <section id="content">
