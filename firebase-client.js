@@ -13,7 +13,7 @@ let stop=()=>{},generation=0,ready=false,callbacks={};
 const persistence=setPersistence(auth,browserSessionPersistence);
 export async function connectWorkspace(handlers){
  callbacks=handlers;await persistence;
- return onAuthStateChanged(auth,async user=>{
+ const unsubscribe=onAuthStateChanged(auth,async user=>{
   const token=++generation;stop();ready=false;handlers.state(initialWorkspace());handlers.status(user?'loading':'signed-out',user);
   if(!user)return;
   if(!user.emailVerified){handlers.status('verify-email',user);return;}
@@ -23,6 +23,7 @@ export async function connectWorkspace(handlers){
    try{const state=snapshot.exists()?decodeWorkspace(snapshot.data().payload):initialWorkspace();ready=!snapshot.metadata.fromCache;if(tracker.accept(snapshot.exists()?snapshot.data().revision:0,snapshot.exists()?snapshot.data().payload:''))handlers.state(state);handlers.status(ready?'connected':'connecting',user);}catch(error){ready=false;handlers.state(initialWorkspace());handlers.status('error',user,error);}
   },error=>{if(token===generation){ready=false;handlers.state(initialWorkspace());handlers.status('error',user,error);}});
  });
+ return()=>{++generation;stop();ready=false;unsubscribe();};
 }
 export async function changeWorkspace(fn){
  const user=auth.currentUser,token=generation;

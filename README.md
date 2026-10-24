@@ -1,14 +1,14 @@
 # QueueFlow
 
-Mobile appointment and queue manager with a local demo and optional private Firebase owner workspace. Limited owner beta, not a complete production SaaS.
+Mobile appointment and queue manager built with Next.js, React, TypeScript and Zustand, using Firebase Authentication and Firestore for private owner workspaces. Limited owner beta, not a complete production SaaS.
 
 ## Run and test
 
-Node.js 24.12+: `npm ci`, `npm run build`, `npm start`. Open http://127.0.0.1:4173. The Firebase browser bundle is built from firebase-client.js and is not checked into Git. `npm test` runs 43 unit/domain tests. Java 21 and the Firebase emulators are required for six integration tests (`npm run test:rules`). GitHub Actions builds and runs both suites before deploying Pages.
+Node.js 24.12+: `npm ci`, `npm run build`, `npm start`. Open http://127.0.0.1:4173/queueflow/. Next.js exports public pages and a React dashboard to out/. A single Zustand store keeps navigation, filters and booking drafts in memory; changing dashboard views does not reconnect Firebase. `npm test` runs 62 unit/domain/store tests. Run `npm run typecheck` and `node scripts/check-static.mjs` after building. Java 21 and the Firebase emulators are required for six integration tests (`npm run test:rules`). GitHub Actions builds and runs both suites before deploying Pages.
 
 ## Private cloud workspace
 
-Select Sign in / cloud workspace, use Google or email/password, and verify your email. Unverified accounts cannot access records. Auth uses session persistence. Cloud data is not stored in localStorage. The demo is separate and never imported automatically. Cloud edits stay locked while signed out, offline, unverified or disconnected. A failed cloud save never falls back to demo storage. Sign-out and account changes clear visible records.
+Select Sign in / cloud workspace, use Google or email/password, and verify your email. Unverified accounts cannot access records. Auth uses session persistence. Cloud data is not stored in localStorage. Visitors see sign-in before any company records. There is no shared anonymous company. Legacy demo utilities are retained for compatibility tests, but are not exposed by the React application. Cloud edits stay locked while signed out, offline, unverified or disconnected. A failed cloud save never falls back to demo storage. Sign-out and account changes clear visible records.
 
 Selected project: angular-gateway-xmbw7. Named Enterprise database: ai-studio-resumeaiairesume-160378a3-37d7-4ab9-b93d-ec929e2cbef4, us-west1. No billing activation. The live hostname mhaddi12.github.io is authorized. Google and Email/Password were verified enabled in the console. CLI rule deployment remains permission-blocked; owner-only rules were published through the console on 23 October 2026 with explicit approval.
 
@@ -22,7 +22,7 @@ The emulator exercises Standard document/rules semantics, not a full Enterprise 
 
 ## Development isolation
 
-Start `firebase emulators:start --config firebase.emulators.json --project demo-queueflow --only auth,firestore`. Services bind only to loopback. Open http://127.0.0.1:4173/app.html?emulators=1&workspace=cloud. Emulator mode is allowed only on 127.0.0.1 and uses demo-queueflow instead of the real project. Disposable test accounts and fictional records must remain in emulators.
+Start `firebase emulators:start --config firebase.emulators.json --project demo-queueflow --only auth,firestore`. Services bind only to loopback. Open http://127.0.0.1:4173/queueflow/app.html?emulators=1&workspace=cloud. Emulator mode is allowed only on 127.0.0.1 and uses demo-queueflow instead of the real project. Disposable test accounts and fictional records must remain in emulators.
 
 ## Payments
 

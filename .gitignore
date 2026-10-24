@@ -10,3 +10,8 @@ node_modules/
 Thumbs.db
 dist/firebase-client.js
 *-debug.*
+
+.next/
+out/
+public/
+*.tsbuildinfo
