@@ -21,6 +21,8 @@ import {
 import AccountDialog from "./AccountDialog";
 import BookingDialog from "./BookingDialog";
 import Dialog from "./Dialog";
+import WorkspaceSkeleton, { PendingIndicator } from "./Loading";
+import { needsWorkspaceSkeleton } from "../dist/loading-state.js";
 
 const labels: Record<string, string> = {
   booked: "Scheduled",
@@ -697,6 +699,12 @@ export default function Workspace() {
     if (state.mode !== "demo") void startCloud();
   };
   const canEdit = status === "connected" && online && !busy;
+  if (needsWorkspaceSkeleton(state)) {
+    return <>
+      <WorkspaceSkeleton view={view} />
+      {accountOpen && <AccountDialog />}
+    </>;
+  }
   return (
     <>
       <button
@@ -778,7 +786,8 @@ export default function Workspace() {
             </button>
           </div>
         </header>
-        <main>
+        <main aria-busy={busy}>
+          {busy && <PendingIndicator />}
           {state.mode === "demo" && <div className="connection-banner" role="status"><b>Demo company</b> · Sample records stay in this browser. <a href="?workspace=cloud">Company sign in →</a></div>}
           <div className="page-heading">
             <div>
